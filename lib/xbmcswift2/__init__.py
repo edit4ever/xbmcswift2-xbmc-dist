@@ -51,7 +51,7 @@ except ImportError:
     CLI_MODE = True
 
     import sys
-    from logger import log
+    from .logger import log
 
     # Mock the XBMC modules
     from mockxbmc import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs

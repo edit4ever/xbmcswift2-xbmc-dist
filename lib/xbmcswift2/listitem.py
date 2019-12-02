@@ -29,7 +29,7 @@ class ListItem(object):
         }
         #kwargs = dict((key, val) for key, val in locals().items() if val is
         #not None and key != 'self')
-        kwargs = dict((key, val) for key, val in kwargs.items()
+        kwargs = dict((key, val) for key, val in list(kwargs.items())
                       if val is not None)
         self._listitem = xbmcgui.ListItem(**kwargs)
 
@@ -57,8 +57,8 @@ class ListItem(object):
         previous context menu items will be removed.
         '''
         for label, action in items:
-            assert isinstance(label, basestring)
-            assert isinstance(action, basestring)
+            assert isinstance(label, str)
+            assert isinstance(action, str)
         if replace_items:
             self._context_menu_items = []
         self._context_menu_items.extend(items)
@@ -207,12 +207,12 @@ class ListItem(object):
             # Need to support existing tuples, but prefer to have a dict for
             # properties.
             if hasattr(properties, 'items'):
-                properties = properties.items()
+                properties = list(properties.items())
             for key, val in properties:
                 listitem.set_property(key, val)
 
         if stream_info:
-            for stream_type, stream_values in stream_info.items():
+            for stream_type, stream_values in list(stream_info.items()):
                 listitem.add_stream_info(stream_type, stream_values)
 
         if context_menu:

@@ -7,10 +7,10 @@
     :copyright: (c) 2012 by Jonathan Beluch
     :license: GPLv3, see LICENSE for more details.
 '''
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -20,7 +20,7 @@ def xbmc_url(url, **options):
     HTTP headers to XBMC to be used when fetching a media resource, e.g.
     cookies.
     '''
-    optionstring = urllib.urlencode(options)
+    optionstring = urllib.parse.urlencode(options)
     if optionstring:
         return url + '|' + optionstring
     return url
@@ -39,7 +39,7 @@ def enum(*args, **kwargs):
     ['NY', 'NEW_JERSEY']
     '''
     kwargs.update((arg, arg) for arg in args)
-    kwargs['_fields'] = kwargs.keys()
+    kwargs['_fields'] = list(kwargs.keys())
     return type('Enum', (), kwargs)
 
 
@@ -49,7 +49,7 @@ DEBUG_MODES = [Modes.ONCE, Modes.CRAWL, Modes.INTERACTIVE]
 
 def clean_dict(dct):
     '''Returns a dict where items with a None value are removed'''
-    return dict((key, val) for key, val in dct.items() if val is not None)
+    return dict((key, val) for key, val in list(dct.items()) if val is not None)
 
 
 def pickle_dict(items):
@@ -59,8 +59,8 @@ def pickle_dict(items):
     '''
     ret = {}
     pickled_keys = []
-    for key, val in items.items():
-        if isinstance(val, basestring):
+    for key, val in list(items.items()):
+        if isinstance(val, str):
             ret[key] = val
         else:
             pickled_keys.append(key)
@@ -85,7 +85,7 @@ def unpickle_args(items):
 
     pickled_keys = pickled[0].split(',')
     ret = {}
-    for key, vals in items.items():
+    for key, vals in list(items.items()):
         if key in pickled_keys:
             ret[key] = [pickle.loads(val) for val in vals]
         else:
@@ -96,7 +96,7 @@ def unpickle_dict(items):
     '''Returns a dict pickled with pickle_dict'''
     pickled_keys = items.pop('_pickled', '').split(',')
     ret = {}
-    for key, val in items.items():
+    for key, val in list(items.items()):
         if key in pickled_keys:
             ret[key] = pickle.loads(val)
         else:
@@ -107,7 +107,7 @@ def unpickle_dict(items):
 def download_page(url, data=None):
     '''Returns the response for the given url. The optional data argument is
     passed directly to urlopen.'''
-    conn = urllib2.urlopen(url, data)
+    conn = urllib.request.urlopen(url, data)
     resp = conn.read()
     conn.close()
     return resp
@@ -120,12 +120,12 @@ _hextochr.update(('%02X' % i, chr(i)) for i in range(256))
 def unhex(inp):
     '''unquote(r'abc\x20def') -> 'abc def'.'''
     res = inp.split(r'\x')
-    for i in xrange(1, len(res)):
+    for i in range(1, len(res)):
         item = res[i]
         try:
             res[i] = _hextochr[item[:2]] + item[2:]
         except KeyError:
             res[i] = '%' + item
         except UnicodeDecodeError:
-            res[i] = unichr(int(item[:2], 16)) + item[2:]
+            res[i] = chr(int(item[:2], 16)) + item[2:]
     return ''.join(res)

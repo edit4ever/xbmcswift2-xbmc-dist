@@ -8,7 +8,7 @@
     :license: GPLv3, see LICENSE for more details.
 '''
 import re
-from urllib import urlencode, unquote_plus, quote_plus
+from urllib.parse import urlencode, unquote_plus, quote_plus
 from xbmcswift2.common import pickle_dict, unpickle_dict
 
 
@@ -58,8 +58,8 @@ class UrlRule(object):
 
         try:
             self._regex = re.compile('^' + p + '$')
-        except re.error, e:
-            raise ValueError, ('There was a problem creating this URL rule. '
+        except re.error as e:
+            raise ValueError('There was a problem creating this URL rule. '
                                'Ensure you do not have any unpaired angle '
                                'brackets: "<" or ">"')
 
@@ -87,14 +87,14 @@ class UrlRule(object):
 
         # urlunencode the values
         items = dict((key, unquote_plus(val))
-                     for key, val in m.groupdict().items())
+                     for key, val in list(m.groupdict().items()))
 
         # unpickle any items if present
         items = unpickle_dict(items)
 
         # We need to update our dictionary with default values provided in
         # options if the keys don't already exist.
-        [items.setdefault(key, val) for key, val in self._options.items()]
+        [items.setdefault(key, val) for key, val in list(self._options.items())]
         return self._view_func, items
 
     def _make_path(self, items):
@@ -103,9 +103,9 @@ class UrlRule(object):
         Uses this url rule's url pattern and replaces instances of <var_name>
         with the appropriate value from the items dict.
         '''
-        for key, val in items.items():
-            if not isinstance(val, basestring):
-                raise TypeError, ('Value "%s" for key "%s" must be an instance'
+        for key, val in list(items.items()):
+            if not isinstance(val, str):
+                raise TypeError('Value "%s" for key "%s" must be an instance'
                                   ' of basestring' % (val, key))
             items[key] = quote_plus(val)
 
@@ -114,7 +114,7 @@ class UrlRule(object):
         except AttributeError:
             # Old version of python
             path = self._url_format
-            for key, val in items.items():
+            for key, val in list(items.items()):
                 path = path.replace('{%s}' % key, val)
         return path
 
@@ -144,23 +144,23 @@ class UrlRule(object):
                      need to persist a large amount of data between requests.
         '''
         # Convert any ints and longs to strings
-        for key, val in items.items():
-            if isinstance(val, (int, long)):
+        for key, val in list(items.items()):
+            if isinstance(val, int):
                 items[key] = str(val)
 
         # First use our defaults passed when registering the rule
-        url_items = dict((key, val) for key, val in self._options.items()
+        url_items = dict((key, val) for key, val in list(self._options.items())
                          if key in self._keywords)
 
         # Now update with any items explicitly passed to url_for
-        url_items.update((key, val) for key, val in items.items()
+        url_items.update((key, val) for key, val in list(items.items())
                          if key in self._keywords)
 
         # Create the path
         path = self._make_path(url_items)
 
         # Extra arguments get tacked on to the query string
-        qs_items = dict((key, val) for key, val in items.items()
+        qs_items = dict((key, val) for key, val in list(items.items())
                         if key not in self._keywords)
         qs = self._make_qs(qs_items)
 

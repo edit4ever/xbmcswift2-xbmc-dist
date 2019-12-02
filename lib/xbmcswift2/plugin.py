@@ -12,23 +12,23 @@ import os
 import sys
 import pickle
 import xbmcswift2
-from urllib import urlencode
+from urllib.parse import urlencode
 from functools import wraps
 from optparse import OptionParser
 try:
-    from urlparse import parse_qs
+    from urllib.parse import parse_qs
 except ImportError:
     from cgi import parse_qs
 
-from listitem import ListItem
-from logger import log, setup_log
-from common import enum
-from common import clean_dict
-from urls import UrlRule, NotFoundException, AmbiguousUrlException
+from .listitem import ListItem
+from .logger import log, setup_log
+from .common import enum
+from .common import clean_dict
+from .urls import UrlRule, NotFoundException, AmbiguousUrlException
 from xbmcswift2 import (xbmc, xbmcgui, xbmcplugin, xbmcaddon, Request,)
 
-from xbmcmixin import XBMCMixin
-from common import Modes, DEBUG_MODES
+from .xbmcmixin import XBMCMixin
+from .common import Modes, DEBUG_MODES
 
 
 class Plugin(XBMCMixin):
@@ -256,7 +256,7 @@ class Plugin(XBMCMixin):
         The route decorator provides the same functionality.
         '''
         rule = UrlRule(url_rule, view_func, name, options)
-        if name in self._view_functions.keys():
+        if name in list(self._view_functions.keys()):
             # TODO: Raise exception for ambiguous views during registration
             log.warning('Cannot add url rule "%s" with name "%s". There is '
                         'already a view with that name', url_rule, name)
@@ -280,7 +280,7 @@ class Plugin(XBMCMixin):
             rule = self._view_functions[endpoint]
         except KeyError:
             try:
-                rule = (rule for rule in self._view_functions.values() if rule.view_func == endpoint).next()
+                rule = next((rule for rule in list(self._view_functions.values()) if rule.view_func == endpoint))
             except StopIteration:
                 raise NotFoundException(
                     '%s doesn\'t match any known patterns.' % endpoint)
@@ -315,7 +315,7 @@ class Plugin(XBMCMixin):
                     listitems = self.finish(listitems)
 
             return listitems
-        raise NotFoundException, 'No matching view found for %s' % path
+        raise NotFoundException('No matching view found for %s' % path)
 
     def redirect(self, url):
         '''Used when you need to redirect to another view, and you only
@@ -333,7 +333,7 @@ class Plugin(XBMCMixin):
 
         # Close any open storages which will persist them to disk
         if hasattr(self, '_unsynced_storages'):
-            for storage in self._unsynced_storages.values():
+            for storage in list(self._unsynced_storages.values()):
                 log.debug('Saving a %s storage to disk at "%s"',
                           storage.file_format, storage.filename)
                 storage.close()

@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import shelve
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from datetime import timedelta
 from functools import wraps
 
@@ -11,8 +11,8 @@ from xbmcswift2 import xbmc, xbmcaddon, xbmcplugin, xbmcgui
 from xbmcswift2.storage import TimedStorage
 from xbmcswift2.logger import log
 from xbmcswift2.constants import VIEW_MODES, SortMethod
-from common import Modes, DEBUG_MODES
-from request import Request
+from .common import Modes, DEBUG_MODES
+from .request import Request
 
 
 
@@ -202,7 +202,7 @@ class XBMCMixin(object):
         value = self.addon.getSetting(id=key)
         if converter is str:
             return value
-        elif converter is unicode:
+        elif converter is str:
             return value.decode('utf-8')
         elif converter is bool:
             return value == 'true'
@@ -232,14 +232,14 @@ class XBMCMixin(object):
         Available playlists include *video* and *music*.
         '''
         playlists = {'music': 0, 'video': 1}
-        assert playlist in playlists.keys(), ('Playlist "%s" is invalid.' %
+        assert playlist in list(playlists.keys()), ('Playlist "%s" is invalid.' %
                                               playlist)
         selected_playlist = xbmc.PlayList(playlists[playlist])
 
         _items = []
         for item in items:
             if not hasattr(item, 'as_xbmc_listitem'):
-                if 'info_type' in item.keys():
+                if 'info_type' in list(item.keys()):
                     log.warning('info_type key has no affect for playlist '
                                 'items as the info_type is inferred from the '
                                 'playlist type.')
@@ -309,7 +309,7 @@ class XBMCMixin(object):
         # Create ListItems for anything that is not already an instance of
         # ListItem
         if not hasattr(item, 'as_tuple'):
-            if 'info_type' not in item.keys():
+            if 'info_type' not in list(item.keys()):
                 item['info_type'] = info_type
             item = xbmcswift2.ListItem.from_dict(**item)
         return item
@@ -328,7 +328,7 @@ class XBMCMixin(object):
         # method directly. This is to ensure a video is played before calling
         # this method.
         player = xbmc.Player()
-        for _ in xrange(30):
+        for _ in range(30):
             if player.isPlaying():
                 break
             time.sleep(1)
@@ -365,7 +365,7 @@ class XBMCMixin(object):
             item = {}
             succeeded = False
 
-        if isinstance(item, basestring):
+        if isinstance(item, str):
             # caller is passing a url instead of an item dict
             item = {'path': item}
 
@@ -493,7 +493,7 @@ class XBMCMixin(object):
             self.add_items(items)
         if sort_methods:
             for sort_method in sort_methods:
-                if not isinstance(sort_method, basestring) and hasattr(sort_method, '__len__'):
+                if not isinstance(sort_method, str) and hasattr(sort_method, '__len__'):
                     self.add_sort_method(*sort_method)
                 else:
                     self.add_sort_method(sort_method)

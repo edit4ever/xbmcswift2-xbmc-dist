@@ -12,7 +12,7 @@ import csv
 import json
 import time
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 import shutil
@@ -77,7 +77,7 @@ class _PersistentDictMixin(object):
     def dump(self, fileobj):
         '''Handles the writing of the dict to the file object'''
         if self.file_format == 'csv':
-            csv.writer(fileobj).writerows(self.raw_dict().items())
+            csv.writer(fileobj).writerows(list(self.raw_dict().items()))
         elif self.file_format == 'json':
             json.dump(self.raw_dict(), fileobj, separators=(',', ':'))
         elif self.file_format == 'pickle':
@@ -177,7 +177,7 @@ class TimedStorage(_Storage):
         '''Initially fills the underlying dictionary with keys, values and
         timestamps.
         '''
-        for key, val in mapping.items():
+        for key, val in list(mapping.items()):
             _, timestamp = val
             if not self.TTL or (datetime.utcnow() -
                 datetime.utcfromtimestamp(timestamp) < self.TTL):

@@ -32,7 +32,7 @@ class SortMethod(object):
 
 
 PREFIX = 'SORT_METHOD_'
-for attr_name, attr_value in xbmcplugin.__dict__.items():
+for attr_name, attr_value in list(xbmcplugin.__dict__.items()):
     if attr_name.startswith(PREFIX):
         setattr(SortMethod, attr_name[len(PREFIX):], attr_value)
 
